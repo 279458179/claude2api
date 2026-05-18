@@ -8,7 +8,6 @@ from services.config import config
 router = APIRouter()
 
 
-# 管理员密码配置
 ADMIN_PASSWORD_KEY = "admin_password"
 DEFAULT_ADMIN_PASSWORD = "admin123"
 
@@ -18,12 +17,10 @@ class AdminLogin(BaseModel):
 
 
 def get_admin_password() -> str:
-    """获取管理员密码"""
     return config._config.get(ADMIN_PASSWORD_KEY, DEFAULT_ADMIN_PASSWORD)
 
 
 def verify_admin(admin_token: Optional[str] = Cookie(None)) -> bool:
-    """验证管理员登录状态"""
     if admin_token != get_admin_password():
         raise HTTPException(status_code=401, detail="Unauthorized")
     return True
@@ -165,13 +162,11 @@ LOGIN_PAGE = """
 
 @router.get("/login", response_class=HTMLResponse)
 async def admin_login_page():
-    """登录页面"""
     return LOGIN_PAGE
 
 
 @router.post("/login")
 async def admin_login(password: str = Form(...)):
-    """处理登录"""
     if password != get_admin_password():
         raise HTTPException(status_code=401, detail="密码错误")
 
@@ -182,13 +177,13 @@ async def admin_login(password: str = Form(...)):
 
 @router.get("/logout")
 async def admin_logout():
-    """退出登录"""
     response = RedirectResponse(url="/admin/login")
     response.delete_cookie("admin_token")
     return response
 
 
-ACCOUNT_PAGE_TEMPLATE = """
+def get_account_page(total_accounts: int, active_accounts: int, proxy_status: str, accounts_rows: str) -> str:
+    return f"""
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -196,137 +191,137 @@ ACCOUNT_PAGE_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude2API - 账号管理</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f5f5f5;
             min-height: 100vh;
-        }
-        .navbar {
+        }}
+        .navbar {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: white;
-        }
-        .navbar h1 { font-size: 20px; }
-        .navbar-links a {
+        }}
+        .navbar h1 {{ font-size: 20px; }}
+        .navbar-links a {{
             color: white;
             margin-left: 20px;
             text-decoration: none;
-        }
-        .navbar-links a:hover { text-decoration: underline; }
-        .container {
+        }}
+        .navbar-links a:hover {{ text-decoration: underline; }}
+        .container {{
             max-width: 1200px;
             margin: 30px auto;
             padding: 0 20px;
-        }
-        .card {
+        }}
+        .card {{
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 25px;
             margin-bottom: 20px;
-        }
-        .card-header {
+        }}
+        .card-header {{
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             border-bottom: 1px solid #eee;
             padding-bottom: 15px;
-        }
-        .card-title { font-size: 18px; color: #333; }
-        table {
+        }}
+        .card-title {{ font-size: 18px; color: #333; }}
+        table {{
             width: 100%;
             border-collapse: collapse;
-        }
-        th, td {
+        }}
+        th, td {{
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #eee;
-        }
-        th { background: #f8f8f8; color: #666; font-weight: 500; }
-        .status {
+        }}
+        th {{ background: #f8f8f8; color: #666; font-weight: 500; }}
+        .status {{
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
-        }
-        .status.active { background: #e8f5e9; color: #2e7d32; }
-        .status.inactive { background: #ffebee; color: #c62828; }
-        .btn-small {
+        }}
+        .status.active {{ background: #e8f5e9; color: #2e7d32; }}
+        .status.inactive {{ background: #ffebee; color: #c62828; }}
+        .btn-small {{
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
             font-size: 13px;
             cursor: pointer;
             margin-right: 5px;
-        }
-        .btn-toggle { background: #667eea; color: white; }
-        .btn-delete { background: #e74c3c; color: white; }
-        .btn-add {
+        }}
+        .btn-toggle {{ background: #667eea; color: white; }}
+        .btn-delete {{ background: #e74c3c; color: white; }}
+        .btn-add {{
             padding: 10px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-        }
-        .modal {
+        }}
+        .modal {{
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             align-items: center;
             justify-content: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
+        }}
+        .modal.active {{ display: flex; }}
+        .modal-content {{
             background: white;
             padding: 30px;
             border-radius: 12px;
             width: 90%;
             max-width: 500px;
-        }
-        .modal-title { font-size: 18px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #333; }
-        .form-group input {
+        }}
+        .modal-title {{ font-size: 18px; margin-bottom: 20px; }}
+        .form-group {{ margin-bottom: 15px; }}
+        .form-group label {{ display: block; margin-bottom: 5px; color: #333; }}
+        .form-group input {{
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
-        }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-cancel {
+        }}
+        .modal-buttons {{ display: flex; gap: 10px; margin-top: 20px; }}
+        .btn-cancel {{
             padding: 10px 20px;
             background: #ddd;
             color: #333;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-        }
-        .btn-save {
+        }}
+        .btn-save {{
             padding: 10px 20px;
             background: #667eea;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-        }
-        .info-grid {
+        }}
+        .info-grid {{
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-        }
-        .info-item {
+        }}
+        .info-item {{
             background: #f8f8f8;
             padding: 15px;
             border-radius: 8px;
-        }
-        .info-item h3 { font-size: 14px; color: #666; margin-bottom: 5px; }
-        .info-item p { font-size: 20px; color: #333; font-weight: 500; }
+        }}
+        .info-item h3 {{ font-size: 14px; color: #666; margin-bottom: 5px; }}
+        .info-item p {{ font-size: 20px; color: #333; font-weight: 500; }}
     </style>
 </head>
 <body>
@@ -417,77 +412,77 @@ ACCOUNT_PAGE_TEMPLATE = """
     </div>
 
     <script>
-        function showAddModal() {
+        function showAddModal() {{
             document.getElementById("addModal").classList.add("active");
-        }
-        function hideAddModal() {
+        }}
+        function hideAddModal() {{
             document.getElementById("addModal").classList.remove("active");
-        }
+        }}
 
-        async function addAccount() {
+        async function addAccount() {{
             const sessionKey = document.getElementById("newSessionKey").value;
             const name = document.getElementById("newName").value;
             const email = document.getElementById("newEmail").value;
 
-            if (!sessionKey) {
+            if (!sessionKey) {{
                 alert("请输入 Session Key");
                 return;
-            }
+            }}
 
-            try {
-                const res = await fetch("/v1/accounts", {
+            try {{
+                const res = await fetch("/v1/accounts", {{
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ session_key: sessionKey, name, email })
-                });
+                    headers: {{ "Content-Type": "application/json" }},
+                    body: JSON.stringify({{ session_key: sessionKey, name, email }})
+                }});
 
-                if (res.ok) {
+                if (res.ok) {{
                     hideAddModal();
                     location.reload();
-                } else {
+                }} else {{
                     alert("添加失败: " + await res.text());
-                }
-            } catch (err) {
+                }}
+            }} catch (err) {{
                 alert("添加失败");
-            }
-        }
+            }}
+        }}
 
-        async function toggleAccount(accountId) {
-            try {
-                const res = await fetch("/v1/accounts/" + accountId + "/toggle", { method: "POST" });
+        async function toggleAccount(accountId) {{
+            try {{
+                const res = await fetch("/v1/accounts/" + accountId + "/toggle", {{ method: "POST" }});
                 if (res.ok) location.reload();
-            } catch (err) {
+            }} catch (err) {{
                 alert("操作失败");
-            }
-        }
+            }}
+        }}
 
-        async function deleteAccount(accountId) {
+        async function deleteAccount(accountId) {{
             if (!confirm("确定要删除该账号吗?")) return;
-            try {
-                const res = await fetch("/v1/accounts/" + accountId, { method: "DELETE" });
+            try {{
+                const res = await fetch("/v1/accounts/" + accountId, {{ method: "DELETE" }});
                 if (res.ok) location.reload();
-            } catch (err) {
+            }} catch (err) {{
                 alert("删除失败");
-            }
-        }
+            }}
+        }}
 
-        async function testHealth() {
+        async function testHealth() {{
             const res = await fetch("/v1/system/health");
             const data = await res.json();
             showTestResult("健康检查", data);
-        }
+        }}
 
-        async function testModels() {
+        async function testModels() {{
             const res = await fetch("/v1/models");
             const data = await res.json();
             showTestResult("模型列表", data);
-        }
+        }}
 
-        function showTestResult(title, data) {
+        function showTestResult(title, data) {{
             const div = document.getElementById("testResult");
             div.style.display = "block";
             div.innerHTML = "<strong>" + title + ":</strong><br><pre>" + JSON.stringify(data, null, 2) + "</pre>";
-        }
+        }}
     </script>
 </body>
 </html>
@@ -496,7 +491,6 @@ ACCOUNT_PAGE_TEMPLATE = """
 
 @router.get("/account", response_class=HTMLResponse)
 async def admin_account_page(admin_token: Optional[str] = Cookie(None)):
-    """账号管理页面"""
     if admin_token != get_admin_password():
         return RedirectResponse(url="/admin/login")
 
@@ -528,15 +522,11 @@ async def admin_account_page(admin_token: Optional[str] = Cookie(None)):
     active_accounts = len([a for a in config.accounts if a.get("active", True)])
     proxy_status = "启用" if config.proxy.get("enabled", False) else "禁用"
 
-    return ACCOUNT_PAGE_TEMPLATE.format(
-        total_accounts=total_accounts,
-        active_accounts=active_accounts,
-        proxy_status=proxy_status,
-        accounts_rows=accounts_rows
-    )
+    return get_account_page(total_accounts, active_accounts, proxy_status, accounts_rows)
 
 
-CONFIG_PAGE_TEMPLATE = """
+def get_config_page(admin_password: str, proxy_checked: str, proxy_http: str, proxy_https: str, server_port: int) -> str:
+    return f"""
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -544,45 +534,45 @@ CONFIG_PAGE_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude2API - 配置管理</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f5f5f5;
             min-height: 100vh;
-        }
-        .navbar {
+        }}
+        .navbar {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: white;
-        }
-        .navbar h1 { font-size: 20px; }
-        .navbar-links a { color: white; margin-left: 20px; text-decoration: none; }
-        .navbar-links a:hover { text-decoration: underline; }
-        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-        .card {
+        }}
+        .navbar h1 {{ font-size: 20px; }}
+        .navbar-links a {{ color: white; margin-left: 20px; text-decoration: none; }}
+        .navbar-links a:hover {{ text-decoration: underline; }}
+        .container {{ max-width: 800px; margin: 30px auto; padding: 0 20px; }}
+        .card {{
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 25px;
             margin-bottom: 20px;
-        }
-        .card-title { font-size: 18px; color: #333; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
-        .form-group input, .form-group select {
+        }}
+        .card-title {{ font-size: 18px; color: #333; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }}
+        .form-group {{ margin-bottom: 20px; }}
+        .form-group label {{ display: block; margin-bottom: 8px; color: #333; font-weight: 500; }}
+        .form-group input, .form-group select {{
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
-        }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
-        .checkbox-group { display: flex; align-items: center; gap: 10px; }
-        .checkbox-group input { width: 20px; height: 20px; }
-        .btn-save {
+        }}
+        .form-group input:focus, .form-group select:focus {{ outline: none; border-color: #667eea; }}
+        .checkbox-group {{ display: flex; align-items: center; gap: 10px; }}
+        .checkbox-group input {{ width: 20px; height: 20px; }}
+        .btn-save {{
             width: 100%;
             padding: 14px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -591,8 +581,8 @@ CONFIG_PAGE_TEMPLATE = """
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-        }
-        .hint { color: #666; font-size: 12px; margin-top: 5px; }
+        }}
+        .hint {{ color: #666; font-size: 12px; margin-top: 5px; }}
     </style>
 </head>
 <body>
@@ -645,38 +635,38 @@ CONFIG_PAGE_TEMPLATE = """
     </div>
 
     <script>
-        async function saveConfig() {
-            const data = {
+        async function saveConfig() {{
+            const data = {{
                 admin_password: document.getElementById("adminPassword").value,
-                proxy: {
+                proxy: {{
                     enabled: document.getElementById("proxyEnabled").checked,
                     http: document.getElementById("proxyHttp").value,
                     https: document.getElementById("proxyHttps").value
-                },
-                server: {
+                }},
+                server: {{
                     host: "0.0.0.0",
                     port: parseInt(document.getElementById("serverPort").value)
-                },
+                }},
                 accounts: []
             };
 
-            try {
-                const res = await fetch("/admin/config", {
+            try {{
+                const res = await fetch("/admin/config", {{
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {{ "Content-Type": "application/json" }},
                     body: JSON.stringify(data)
-                });
+                }});
 
-                if (res.ok) {
+                if (res.ok) {{
                     document.getElementById("result").textContent = "配置已保存！";
                     setTimeout(() => location.reload(), 1000);
-                } else {
+                }} else {{
                     alert("保存失败");
-                }
-            } catch (err) {
+                }}
+            }} catch (err) {{
                 alert("保存失败");
-            }
-        }
+            }}
+        }}
     </script>
 </body>
 </html>
@@ -685,7 +675,6 @@ CONFIG_PAGE_TEMPLATE = """
 
 @router.get("/config", response_class=HTMLResponse)
 async def admin_config_page(admin_token: Optional[str] = Cookie(None)):
-    """配置管理页面"""
     if admin_token != get_admin_password():
         return RedirectResponse(url="/admin/login")
 
@@ -695,24 +684,16 @@ async def admin_config_page(admin_token: Optional[str] = Cookie(None)):
     server_port = config.server.get("port", 8000)
     admin_password = get_admin_password()
 
-    return CONFIG_PAGE_TEMPLATE.format(
-        admin_password=admin_password,
-        proxy_checked=proxy_checked,
-        proxy_http=proxy_http,
-        proxy_https=proxy_https,
-        server_port=server_port
-    )
+    return get_config_page(admin_password, proxy_checked, proxy_http, proxy_https, server_port)
 
 
 @router.post("/config")
 async def save_config(request: Request, admin_token: Optional[str] = Cookie(None)):
-    """保存配置"""
     if admin_token != get_admin_password():
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     data = await request.json()
 
-    # 更新配置
     if "admin_password" in data:
         config._config["admin_password"] = data["admin_password"]
     if "proxy" in data:
