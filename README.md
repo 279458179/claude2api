@@ -45,13 +45,13 @@ docker compose logs -f
 docker compose down
 ```
 
-服务将在 `http://localhost:8001` 启动。
+服务将在 `http://localhost:8000` 启动。
 
 ### 3. 管理后台
 
 部署完成后，访问管理后台添加账号：
 
-- **管理后台地址**: `http://localhost:8001/admin/login`
+- **管理后台地址**: `http://localhost:8000/admin/login`
 - **默认密码**: `admin123`
 
 登录后可在管理后台：
@@ -130,7 +130,7 @@ docker compose down
 
 **指定账号请求示例**：
 ```bash
-curl http://localhost:8001/v1/chat/completions \
+curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer SESSION_KEY_2" \
   -d '{"model": "claude-sonnet-4-20250514", "messages": [{"role": "user", "content": "Hello"}]}'
@@ -152,7 +152,7 @@ curl http://localhost:8001/v1/chat/completions \
 
 ### 基础信息
 
-- **Base URL**: `http://localhost:8001/v1`
+- **Base URL**: `http://localhost:8000/v1`
 - **Content-Type**: `application/json`
 - **认证方式**: Bearer Token（可选，用于指定特定账号）
 
@@ -165,7 +165,7 @@ GET /v1/models
 
 **示例**
 ```bash
-curl http://localhost:8001/v1/models
+curl http://localhost:8000/v1/models
 ```
 
 **响应**
@@ -218,7 +218,7 @@ POST /v1/chat/completions
 
 **非流式请求示例**
 ```bash
-curl http://localhost:8001/v1/chat/completions \
+curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-sonnet-4-20250514",
@@ -255,7 +255,7 @@ curl http://localhost:8001/v1/chat/completions \
 
 **流式请求示例**
 ```bash
-curl http://localhost:8001/v1/chat/completions \
+curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-sonnet-4-20250514",
@@ -287,7 +287,7 @@ GET /v1/accounts
 ```
 
 ```bash
-curl http://localhost:8001/v1/accounts
+curl http://localhost:8000/v1/accounts
 ```
 
 **响应**
@@ -310,7 +310,7 @@ POST /v1/accounts
 ```
 
 ```bash
-curl http://localhost:8001/v1/accounts \
+curl http://localhost:8000/v1/accounts \
   -H "Content-Type: application/json" \
   -d '{
     "session_key": "YOUR_NEW_SESSION_KEY",
@@ -325,8 +325,8 @@ POST /v1/accounts/{account_id}/deactivate
 ```
 
 ```bash
-curl -X POST http://localhost:8001/v1/accounts/acc_1/deactivate
-curl -X POST http://localhost:8001/v1/accounts/acc_1/activate
+curl -X POST http://localhost:8000/v1/accounts/acc_1/deactivate
+curl -X POST http://localhost:8000/v1/accounts/acc_1/activate
 ```
 
 **删除账号**
@@ -335,7 +335,7 @@ DELETE /v1/accounts/{account_id}
 ```
 
 ```bash
-curl -X DELETE http://localhost:8001/v1/accounts/acc_1
+curl -X DELETE http://localhost:8000/v1/accounts/acc_1
 ```
 
 ### 4. 系统接口
@@ -346,7 +346,7 @@ GET /v1/system/health
 ```
 
 ```bash
-curl http://localhost:8001/v1/system/health
+curl http://localhost:8000/v1/system/health
 ```
 
 **响应**
@@ -360,7 +360,7 @@ GET /v1/system/info
 ```
 
 ```bash
-curl http://localhost:8001/v1/system/info
+curl http://localhost:8000/v1/system/info
 ```
 
 ---
@@ -385,7 +385,7 @@ import openai
 
 client = openai.OpenAI(
     api_key="any",  # 可忽略，或传入 session_key 指定账号
-    base_url="http://localhost:8001/v1"
+    base_url="http://localhost:8000/v1"
 )
 
 # 非流式
@@ -418,7 +418,7 @@ import json
 
 # 非流式
 response = httpx.post(
-    "http://localhost:8001/v1/chat/completions",
+    "http://localhost:8000/v1/chat/completions",
     json={
         "model": "claude-sonnet-4-20250514",
         "messages": [{"role": "user", "content": "Hello!"}]
@@ -429,7 +429,7 @@ print(response.json()["choices"][0]["message"]["content"])
 # 流式
 with httpx.stream(
     "POST",
-    "http://localhost:8001/v1/chat/completions",
+    "http://localhost:8000/v1/chat/completions",
     json={
         "model": "claude-sonnet-4-20250514",
         "messages": [{"role": "user", "content": "Hello!"}],
@@ -447,7 +447,7 @@ with httpx.stream(
 ### JavaScript / Node.js
 
 ```javascript
-const response = await fetch('http://localhost:8001/v1/chat/completions', {
+const response = await fetch('http://localhost:8000/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -479,18 +479,18 @@ while (true) {
 
 ```bash
 # 测试健康检查
-curl http://localhost:8001/v1/system/health
+curl http://localhost:8000/v1/system/health
 
 # 测试模型列表
-curl http://localhost:8001/v1/models
+curl http://localhost:8000/v1/models
 
 # 测试聊天（非流式）
-curl http://localhost:8001/v1/chat/completions \
+curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "claude-sonnet-4-20250514", "messages": [{"role": "user", "content": "Say hello in 3 languages"}]}'
 
 # 测试聊天（流式）
-curl http://localhost:8001/v1/chat/completions \
+curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "claude-sonnet-4-20250514", "messages": [{"role": "user", "content": "Count from 1 to 10"}], "stream": true}'
 ```
