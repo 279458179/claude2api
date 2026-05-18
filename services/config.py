@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -18,7 +19,9 @@ DEFAULT_CONFIG = {
 
 class Config:
     def __init__(self):
-        self._config_path: Path = Path(__file__).parent.parent / "config.json"
+        # Support Docker environment with configurable path
+        config_dir = os.environ.get("CONFIG_DIR", Path(__file__).parent.parent)
+        self._config_path: Path = Path(config_dir) / "config.json"
         self._config: Dict[str, Any] = {}
         self._accounts: List[Dict[str, Any]] = []
 

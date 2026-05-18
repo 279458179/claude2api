@@ -11,10 +11,11 @@ Convert Claude's web interface into a standard API format compatible with OpenAI
 - Account pool management
 - Proxy support
 - Multiple Claude models
+- Docker deployment
 
 ## Requirements
 
-- Python 3.10+
+- Docker and Docker Compose
 - Claude.ai session key (from browser cookies)
 
 ## Getting Session Key
@@ -24,23 +25,29 @@ Convert Claude's web interface into a standard API format compatible with OpenAI
 3. Find the `sessionKey` cookie value
 4. Copy the value and add it to `config.json`
 
-## Installation
+## Quick Start (Docker)
 
 ```bash
 # Clone the repository
 git clone https://github.com/279458179/claude2api.git
 cd claude2api
 
-# Install dependencies
-pip install -e .
+# Create config directory
+mkdir -p data
 
-# Or use uv
-uv sync
+# Copy example config
+cp config.example.json data/config.json
+
+# Edit config.json and add your session_key
+# Then start the service
+docker compose up -d
 ```
+
+The API will be available at `http://localhost:8000`.
 
 ## Configuration
 
-Edit `config.json`:
+Edit `data/config.json`:
 
 ```json
 {
@@ -63,15 +70,20 @@ Edit `config.json`:
 }
 ```
 
-## Running
+## Docker Commands
 
 ```bash
-python main.py
-```
+# Build and start
+docker compose up -d
 
-Or with uvicorn:
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
+# View logs
+docker compose logs -f
+
+# Stop service
+docker compose down
+
+# Restart service
+docker compose restart
 ```
 
 ## API Endpoints
@@ -139,11 +151,18 @@ for chunk in response:
     print(chunk.choices[0].delta.content, end="")
 ```
 
-## Docker
+## Manual Installation (Non-Docker)
 
 ```bash
-docker build -t claude2api .
-docker run -p 8000:8000 claude2api
+pip install fastapi uvicorn httpx pydantic python-multipart tiktoken
+
+# Copy config
+cp config.example.json config.json
+
+# Edit config.json and add your session_key
+
+# Run
+python main.py
 ```
 
 ## Disclaimer

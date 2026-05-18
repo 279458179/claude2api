@@ -1,0 +1,12 @@
+services:
+  claude2api:
+    build: .
+    container_name: claude2api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=UTC
+      - CONFIG_DIR=/app/data
+    restart: unless-stopped
