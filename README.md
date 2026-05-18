@@ -48,6 +48,8 @@ docker compose down
 
 ### 3. 配置说明
 
+#### 单账号配置
+
 编辑 `data/config.json`：
 
 ```json
@@ -71,11 +73,61 @@ docker compose down
 }
 ```
 
+#### 多账号配置
+
+在 `accounts` 数组中添加多个账号即可：
+
+```json
+{
+    "accounts": [
+        {
+            "session_key": "SESSION_KEY_1",
+            "name": "Account 1",
+            "active": true
+        },
+        {
+            "session_key": "SESSION_KEY_2",
+            "name": "Account 2",
+            "active": true
+        },
+        {
+            "session_key": "SESSION_KEY_3",
+            "name": "Account 3",
+            "active": false
+        }
+    ],
+    "proxy": {
+        "enabled": false,
+        "http": "",
+        "https": ""
+    },
+    "server": {
+        "host": "0.0.0.0",
+        "port": 8000
+    }
+}
+```
+
+**多账号负载均衡说明**：
+- 系统自动使用第一个 `active: true` 的账号
+- 如需指定特定账号，在请求头中传入 `Authorization: Bearer <session_key>`
+- 某账号失效时，可设置 `active: false` 暂时禁用
+
+**指定账号请求示例**：
+```bash
+curl http://localhost:8001/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SESSION_KEY_2" \
+  -d '{"model": "claude-sonnet-4-20250514", "messages": [{"role": "user", "content": "Hello"}]}'
+```
+
+#### 配置字段说明
+
 | 字段 | 说明 |
 |------|------|
 | `session_key` | Claude.ai 的 sessionKey cookie 值 |
-| `name` | 账号名称（可选） |
-| `active` | 是否启用该账号 |
+| `name` | 账号名称（可选，便于识别） |
+| `active` | 是否启用该账号（`true`/`false`） |
 | `proxy.enabled` | 是否启用代理 |
 | `proxy.http/https` | 代理地址 |
 
