@@ -28,7 +28,7 @@ Convert Claude's web interface into a standard API format compatible with OpenAI
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/claude2api.git
+git clone https://github.com/279458179/claude2api.git
 cd claude2api
 
 # Install dependencies
