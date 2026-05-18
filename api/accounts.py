@@ -80,3 +80,14 @@ async def deactivate_account(account_id: str):
             config.save()
             return {"message": "Account deactivated"}
     raise HTTPException(status_code=404, detail="Account not found")
+
+
+@router.post("/{account_id}/toggle")
+async def toggle_account(account_id: str):
+    """Toggle account active status"""
+    for acc in config.accounts:
+        if acc.get("account_id") == account_id:
+            acc["active"] = not acc.get("active", True)
+            config.save()
+            return {"message": "Account toggled", "active": acc["active"]}
+    raise HTTPException(status_code=404, detail="Account not found")

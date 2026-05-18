@@ -1,4 +1,5 @@
 {
+    "admin_password": "admin123",
     "accounts": [],
     "proxy": {
         "enabled": false,

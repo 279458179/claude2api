@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from .ai import router as ai_router
 from .accounts import router as accounts_router
 from .system import router as system_router
+from .admin import router as admin_router
 from services.config import config
 from services.claude_service import claude_service
 
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
     app.include_router(ai_router, prefix="/v1", tags=["AI"])
     app.include_router(accounts_router, prefix="/v1/accounts", tags=["Accounts"])
     app.include_router(system_router, prefix="/v1/system", tags=["System"])
+    app.include_router(admin_router, prefix="/admin", tags=["Admin"])
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request, exc):
