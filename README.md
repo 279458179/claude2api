@@ -43,7 +43,7 @@ cp config.example.json data/config.json
 docker compose up -d
 ```
 
-The API will be available at `http://localhost:8000`.
+The API will be available at `http://localhost:8001`.
 
 ## Configuration
 
@@ -65,7 +65,7 @@ Edit `data/config.json`:
     },
     "server": {
         "host": "0.0.0.0",
-        "port": 8000
+        "port": 8001
     }
 }
 ```
@@ -136,7 +136,7 @@ import openai
 
 client = openai.OpenAI(
     api_key="your_session_key",  # Optional: use specific account
-    base_url="http://localhost:8000/v1"
+    base_url="http://localhost:8001/v1"
 )
 
 response = client.chat.completions.create(
